@@ -51,6 +51,10 @@ Your previous `~/.bashrc` is kept as `~/.bashrc.backup.<date>`.
 Anything machine-specific or secret goes in `~/.bashrc.local`, which is
 loaded last and ignored by git.
 
-## License
+## Dependencies
 
-MIT
+* just
+* picocom
+* shellcheck
+
+To install all the above dependencies, run `j bootstrap`.

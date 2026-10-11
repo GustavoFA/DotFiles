@@ -40,5 +40,15 @@ if [ ! -e "$HOME/.bashrc.local" ]; then
     run cp "$REPO/bash/bashrc.local.example" "$HOME/.bashrc.local"
 fi
 
+# Check if just is installed, and if not, install it.
+if ! command -v just >/dev/null; then
+    if command -v apt-get >dev/null; then
+        echo "install just (needs sudo)" #TODO - installation is not working
+        run sudo apt-get install -y just || echo "WARNING: could not install just; please run: sudo apt install just"
+    else
+        echo "NOTE: 'just' not found. Please, install it manually - sudo apt install just"
+    fi
+fi
+
 echo
 echo "Done. Open a new terminal or run:  source ~/.bashrc"
