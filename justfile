@@ -13,6 +13,7 @@ update:
     sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove --purge -y
     -command -v snap >/dev/null && sudo snap refresh
     -command -v flatpak >/dev/null && flatpak update -y
+    @[ ! -f /var/run/reboot-required ] || echo ">>> Reboot required."
 
 # Install the tools these dotfiles use
 bootstrap:

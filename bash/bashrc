@@ -22,7 +22,11 @@ shopt -s histappend                # append to the history file instead of overw
 shopt -s cmdhist                   # store multi-line commands as one entry
 # Write each command to the history file as soon as it runs, so it is not
 # lost if the terminal crashes and other terminals can pick it up (`history -n`).
-PROMPT_COMMAND="history -a${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+# The guard keeps `reload` from adding it a second time.
+case ";${PROMPT_COMMAND:-};" in
+    *"history -a"*) ;;
+    *) PROMPT_COMMAND="history -a${PROMPT_COMMAND:+; $PROMPT_COMMAND}" ;;
+esac
 
 # ---------------------------------------------------------------- shell options
 shopt -s checkwinsize   # update LINES/COLUMNS after each command

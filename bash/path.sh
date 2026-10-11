@@ -32,7 +32,10 @@ unset d
 # Same logic `conda init` writes, but using $HOME instead of a hard-coded
 # /home/<user> path. Tip: `conda config --set auto_activate_base false`
 # keeps the system Python as default until you run `conda activate`.
-CONDA_HOME="$HOME/miniconda"
+# First existing install wins (miniconda3/anaconda3 are the installers' defaults).
+for CONDA_HOME in "$HOME/miniconda" "$HOME/miniconda3" "$HOME/anaconda3"; do
+    [ -x "$CONDA_HOME/bin/conda" ] && break
+done
 export CONDA_CHANGEPS1=false   # prompt.sh shows the env itself
 
 if [ -x "$CONDA_HOME/bin/conda" ]; then

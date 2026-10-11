@@ -22,9 +22,9 @@ install.sh               creates the symlinks, backs up existing files
 ## Install
 
 ```bash
-git clone https://github.com/<your-user>/dotfiles.git ~/dotfiles
+git clone https://github.com/GustavoFA/DotFiles.git ~/dotfiles
 cd ~/dotfiles
-./install.sh --dry      # preview
+./install.sh --dry      # preview (also: --help)
 ./install.sh
 source ~/.bashrc
 j bootstrap             # optional: installs just, picocom, shellcheck...
@@ -36,8 +36,8 @@ Your previous `~/.bashrc` is kept as `~/.bashrc.backup.<date>`.
 
 | Command | What it does |
 |---|---|
-| `helpme` | list all aliases and functions |
-| `j` | list global tasks (`j update`, `j disk`, `j lint`) |
+| `helpme` | list all aliases and functions with a short description |
+| `j` | list global tasks (`j update`, `j disk`, `j lint`, `j dotfiles-update`) |
 | `upd` | apt + snap + flatpak upgrade |
 | `cleanup` | clear apt cache, old logs, old snap revisions |
 | `bak file` | timestamped copy before editing |
@@ -49,12 +49,23 @@ Your previous `~/.bashrc` is kept as `~/.bashrc.backup.<date>`.
 ## Private settings
 
 Anything machine-specific or secret goes in `~/.bashrc.local`, which is
-loaded last and ignored by git.
+loaded last and ignored by git. `install.sh` creates it once from
+`bash/bashrc.local.example` and never overwrites it.
+
+## Toolchains
+
+`bash/path.sh` only adds what exists on the current machine:
+
+* **STM32**: the newest `arm-none-eabi-gcc` bundled with STM32CubeIDE in `~/st/`
+* **Pico SDK**: sets `PICO_SDK_PATH` if `~/pico/pico-sdk` exists
+* **Conda**: first of `~/miniconda`, `~/miniconda3`, `~/anaconda3`
 
 ## Dependencies
 
-* just
-* picocom
-* shellcheck
+`just`, `picocom`, `shellcheck`, plus `curl`, `unzip` and `p7zip-full` for
+`myip` / `extract`. Install them all with `j bootstrap` (it also adds you to
+the `dialout` group for serial ports).
 
-To install all the above dependencies, run `j bootstrap`.
+## Development
+
+Run `j lint` (shellcheck) after editing any shell file.

@@ -24,4 +24,9 @@ __set_prompt() {
     PS1="${title}${env}${green}\u@\h${reset}:${blue}\w${yellow}\$(__git_branch)${reset}${mark} "
 }
 
-PROMPT_COMMAND="__set_prompt${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+# Must run first so it sees the real exit code. Added only once, so `reload`
+# does not stack a second copy that would always see status 0.
+case ";${PROMPT_COMMAND:-};" in
+    *"__set_prompt"*) ;;
+    *) PROMPT_COMMAND="__set_prompt${PROMPT_COMMAND:+; $PROMPT_COMMAND}" ;;
+esac

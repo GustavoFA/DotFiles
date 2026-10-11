@@ -9,7 +9,12 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRY=0
-[ "${1:-}" = "--dry" ] && DRY=1
+case "${1:-}" in
+    "")          ;;
+    --dry|-n)    DRY=1 ;;
+    -h|--help)   sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *)           echo "unknown option: $1 (try --help)" >&2; exit 2 ;;
+esac
 
 run() { if [ "$DRY" -eq 1 ]; then echo "  would run: $*"; else "$@"; fi; }
 
@@ -40,13 +45,13 @@ if [ ! -e "$HOME/.bashrc.local" ]; then
     run cp "$REPO/bash/bashrc.local.example" "$HOME/.bashrc.local"
 fi
 
-# Check if just is installed, and if not, install it.
+# `just` runs the global task list (alias `j`); install it if missing.
 if ! command -v just >/dev/null; then
-    if command -v apt-get >dev/null; then
-        echo "install just (needs sudo)" #TODO - installation is not working
+    if command -v apt-get >/dev/null; then
+        echo "install just (needs sudo)"
         run sudo apt-get install -y just || echo "WARNING: could not install just; please run: sudo apt install just"
     else
-        echo "NOTE: 'just' not found. Please, install it manually - sudo apt install just"
+        echo "NOTE: 'just' not found. Please install it manually: https://github.com/casey/just"
     fi
 fi
 

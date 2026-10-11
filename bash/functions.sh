@@ -19,6 +19,7 @@ extract() {
         *.gz)             gunzip "$1" ;;
         *.bz2)            bunzip2 "$1" ;;
         *.xz)             unxz "$1" ;;
+        *.zst)            unzstd "$1" ;;
         *.7z)             7z x "$1" ;;
         *.rar)            unrar x "$1" ;;
         *) echo "extract: don't know how to extract '$1'" >&2; return 1 ;;
@@ -61,8 +62,10 @@ cleanup() {
 # (and your user in the dialout group: sudo usermod -aG dialout "$USER")
 serial() {
     local port="${1:-}" baud="${2:-115200}"
+    command -v picocom >/dev/null || { echo "serial: picocom not installed (run: j bootstrap)" >&2; return 1; }
     if [ -z "$port" ]; then
-        port=$(ls /dev/ttyUSB* /dev/ttyACM* 2>/dev/null | head -n1)
+        # first existing device; the trailing "" leaves port empty if none match
+        for port in /dev/ttyUSB* /dev/ttyACM* ""; do [ -e "$port" ] && break; done
         [ -n "$port" ] || { echo "serial: no /dev/ttyUSB* or /dev/ttyACM* found" >&2; return 1; }
     fi
     echo "Opening $port @ $baud (Ctrl-A Ctrl-X to quit)"
@@ -76,10 +79,32 @@ myip() {
 }
 
 # List my own aliases and functions with their one-line description.
+# The description is the trailing `# comment` of an alias, or the first line
+# of the comment block right above it (text after ":   " is dropped).
+# Functions starting with "_" are treated as private and skipped.
 helpme() {
     local f
     for f in "$DOTFILES_BASH"/aliases.sh "$DOTFILES_BASH"/functions.sh; do
         echo "== $(basename "$f")"
-        grep -E "^(alias [^=]+=|[a-z_]+\(\) \{)" "$f" | sed -E 's/^alias ([^=]+)=.*/  \1/; s/^([a-z_]+)\(\) \{.*/  \1()/'
+        awk '
+            /^#/ {
+                if (!incomment) { above = $0; sub(/^#[ \t]*/, "", above); sub(/:[ \t][ \t]+.*/, "", above); sub(/\.$/, "", above) }
+                if (above ~ /^---/) above = ""     # section headers are not descriptions
+                incomment = 1; next
+            }
+            { hasabove = incomment; incomment = 0 }
+            /^alias / {
+                line = $0; sub(/^alias (-- )?/, "", line)
+                name = line; sub(/=.*/, "", name)
+                if (match(line, /[ \t]#[ \t]/)) desc = substr(line, RSTART + 3)
+                else if (hasabove && above != "") desc = above
+                else { desc = line; sub(/^[^=]*=/, "", desc); gsub(/^'\''|'\''$/, "", desc); if (length(desc) > 50) desc = substr(desc, 1, 47) "..." }
+                printf "  %-10s %s\n", name, desc
+            }
+            /^[a-z][a-z0-9_]*\(\) \{/ {
+                name = $0; sub(/\(.*/, "", name)
+                printf "  %-10s %s\n", name, (hasabove ? above : "")
+            }
+        ' "$f"
     done
 }
