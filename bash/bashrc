@@ -1,0 +1,66 @@
+# ~/.bashrc — loaded by every interactive (non-login) bash shell.
+# Managed in my dotfiles repo; machine-specific or private settings go in
+# ~/.bashrc.local, which is NOT in the repo.
+
+# Stop here if the shell is not interactive (scp, rsync, `bash -c ...`).
+case $- in
+    *i*) ;;
+      *) return ;;
+esac
+
+# Where this file really lives (resolves the symlink), so the other pieces
+# can be found next to it.
+DOTFILES_BASH="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+# ---------------------------------------------------------------- history
+HISTCONTROL=ignoreboth:erasedups   # skip duplicates and lines starting with a space
+HISTSIZE=50000                     # lines kept in memory for this session
+HISTFILESIZE=100000                # lines kept in ~/.bash_history
+HISTTIMEFORMAT='%F %T  '           # show date/time in `history`
+HISTIGNORE='ls:ll:la:cd:pwd:exit:clear:history'
+shopt -s histappend                # append to the history file instead of overwriting
+shopt -s cmdhist                   # store multi-line commands as one entry
+# Write each command to the history file as soon as it runs, so it is not
+# lost if the terminal crashes and other terminals can pick it up (`history -n`).
+PROMPT_COMMAND="history -a${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+
+# ---------------------------------------------------------------- shell options
+shopt -s checkwinsize   # update LINES/COLUMNS after each command
+shopt -s globstar       # `**` matches recursively: ls src/**/*.c
+shopt -s autocd         # type a directory name to cd into it
+shopt -s cdspell        # fix small typos in `cd` arguments
+shopt -s dirspell       # ...and in directory names during completion
+
+# make `less` able to show archives, PDFs, etc.
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# ---------------------------------------------------------------- colors
+if [ -x /usr/bin/dircolors ]; then
+    if [ -r ~/.dircolors ]; then eval "$(dircolors -b ~/.dircolors)"; else eval "$(dircolors -b)"; fi
+fi
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# ---------------------------------------------------------------- the rest
+# Order matters: PATH first, then functions (the prompt uses one), then aliases.
+for part in path.sh functions.sh prompt.sh aliases.sh; do
+    # shellcheck source=/dev/null
+    [ -r "$DOTFILES_BASH/$part" ] && . "$DOTFILES_BASH/$part"
+done
+unset part
+
+# Tab completion for commands like git, apt, systemctl...
+if ! shopt -oq posix; then
+    if [ -f /usr/share/bash-completion/bash_completion ]; then
+        . /usr/share/bash-completion/bash_completion
+    elif [ -f /etc/bash_completion ]; then
+        . /etc/bash_completion
+    fi
+fi
+
+# Old-style personal alias file, still honored if it exists.
+# shellcheck source=/dev/null
+[ -f ~/.bash_aliases ] && . ~/.bash_aliases
+
+# Private, machine-specific settings (tokens, work paths...). Never committed.
+# shellcheck source=/dev/null
+[ -f ~/.bashrc.local ] && . ~/.bashrc.local

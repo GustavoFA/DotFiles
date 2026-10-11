@@ -1,0 +1,8 @@
+# ~/.bashrc.local — private, machine-specific settings.
+# This file is created by install.sh and is NOT tracked by git.
+# Put here anything you would not want on a public GitHub page:
+# API tokens, work server names, internal paths, VPN commands...
+
+# export GITHUB_TOKEN=...
+# alias work-vpn='sudo openconnect vpn.example.com'
+# path_prepend "$HOME/work/tools/bin"

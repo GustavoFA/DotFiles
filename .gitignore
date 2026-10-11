@@ -1,0 +1,6 @@
+# Never commit private or machine-specific files
+*.local
+.bashrc.local
+*.backup.*
+*.bak
+.env
